@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <title>Visualization</title>
+                <meta name="description" content="An interactive getting started guide for Brackets.">
+                    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+                    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+                    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+                </head>
+    <body>
+        
+        
+        
+        
+        <div class="interface">
+            <div class="left">
+                <div align="left">
+                <button type="button" onclick="prev()">Prev</button> <button type="button" onclick="next()">Next</button>
+                <select name="sets" id="sets">
+                  <option value="SimpShort">SimpShort</option>
+                  <option value="SimpLong">SimpLong</option>
+                  <option value="CompShort">CompShort</option>
+                  <option value="CompLong">CompLong</option>
+                </select>
+                <input type="text" name="firstname" id="input_id"><button type="button" onclick="find()">GOTO</button>
+                </div>
+                
+                <h4>Question ID: <h4 id="question_id"></h4></h4> <br>
+                
+                <h4>Question: <h4 id="question"></h4></h4> <br>
+                
+                <h4>Answer:<h4 id="answer"></h4></h4> <br>
+                
+                <h4>Ground Truth:<h4 id="ground_truth"></h4></h4> <br>
+
+            </div>
+            
+            <div class="right">
+                
+                <div id="context">
+                </div>
+                
+                
+            </div>
+        </div>
+        
+        
+        <style>
+            .input {
+                width: 200px;
+            }
+            
+            .tb {
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+            
+            .tb td {
+                border: 0.1px solid black;
+                padding: 4px;
+            }
+            
+            th {
+                background-color: #f2f2f2;
+                text-align: left;
+            }
+            
+            .td_bg {
+                background: #FFAA00;
+            }
+            
+            .interface {
+                display: flex;
+            }
+            
+            .left {
+                display: flex;
+                flex-direction: column;
+                margin-left: auto;
+                
+                width: 38%;
+                height: 100vh;
+                overflow: auto;
+                padding: 10pt;
+                /* border-right: thick solid gray; */
+            }
+            
+            .right {
+                display: flex;
+                flex-direction: column;
+                align-items: left;
+                
+                width: 58%;
+                height: 100vh;
+                overflow: auto;
+            }
+            
+            
+            textarea {
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                width: 100%; /* Adjust the width to fit the container */
+                height: 100pt;
+                resize: vertical;
+            }
+            
+            .inputBox {
+                box-sizing: border-box;
+                display: inline-block;
+                position: relative;
+                margin-right: 2%;
+            }
+        </style>
+    </body>
+</html>
+
+<script>
+jQuery.ajaxSetup({async:false});
+var list = [];
+var cnt_set = 'SimpShort';
+$(document).ready(function(){
+    $.getJSON("./SimpShort.json", function (params){
+        list = params
+        if (list.length > 0) {
+            Display(list[0]); // display the first item initially
+        }
+    });
+});
+    
+function Display(data){
+    console.log(data.id);
+    console.log(data.question);
+    console.log(data.answer);
+    console.log(data.ground_truth);
+    var question_id = document.getElementById('question_id');
+    question_id.textContent = data.id;
+    var question = document.getElementById('question');
+    question.textContent = data.question;
+    var answer = document.getElementById('answer');
+    answer.innerHTML = data.answer;
+    var ground_truth = document.getElementById('ground_truth');
+    ground_truth.textContent = data.ground_truth;
+    
+    var context = document.getElementById('context');
+    context.innerHTML = data.context;
+}
+    
+function prev() {
+    var selectElement = document.getElementById("sets");
+    var selectedValue = selectElement.value;
+    
+    if (selectedValue != cnt_set) {
+        cnt_set = selectedValue;
+        $.getJSON("./" + cnt_set + ".json", function (params){
+            list = params
+        });
+    }
+    
+    var question_id = document.getElementById('question_id');
+    question_id = question_id.textContent;
+    question_id = parseInt(question_id, 10);
+    
+    if (question_id == 0){
+        Display(list[list.length - 1]);
+    } else {
+        Display(list[question_id - 1]);
+    }
+}
+
+
+function next() {
+    var selectElement = document.getElementById("sets");
+    var selectedValue = selectElement.value;
+    
+    if (selectedValue != cnt_set) {
+        cnt_set = selectedValue;
+        $.getJSON("./" + cnt_set + ".json", function (params){
+            list = params
+        });
+    }
+    
+    var question_id = document.getElementById('question_id');
+    question_id = question_id.textContent;
+    question_id = parseInt(question_id, 10);
+    
+    if (question_id == list.length - 1){
+        Display(list[0]);
+    } else {
+        Display(list[question_id + 1]);
+    }
+}
+    
+function find() {
+    var selectElement = document.getElementById("sets");
+    var selectedValue = selectElement.value;
+    
+    if (selectedValue != cnt_set) {
+        cnt_set = selectedValue;
+        $.getJSON("./" + cnt_set + ".json", function (params){
+            list = params
+        });
+    }
+    
+    var input_id = $('#input_id').val().trim();
+    var found = input_id < list.length;
+    if (found) {
+        Display(list[input_id]);
+    } else {
+        alert("No question found with the provided ID.");
+        Display(list[0]);
+    }
+}
+    
+               
+</script>
+
